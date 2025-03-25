@@ -12,9 +12,9 @@ resource "random_password" "airflow_webserver_secret_key" {
 resource "kubernetes_namespace" "airflow_namespace" {
   metadata {
     annotations = {
-      name = "airflow"
+      name = var.namespace
     }
-    name = "airflow"
+    name = var.namespace
   }
   depends_on = [
     resource.null_resource.dependencies,
