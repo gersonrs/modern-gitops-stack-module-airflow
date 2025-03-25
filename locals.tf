@@ -120,7 +120,7 @@ locals {
         gitSync = {
           enabled      = true
           repo         = "git@github.com:GersonRS/airflow-dags.git"
-          branch       = var.target_revision == "develop" ? develop : "main"
+          branch       = var.target_revision == "develop" ? "develop" : "main"
           rev          = "HEAD"
           depth        = 2
           maxFailures  = 2
