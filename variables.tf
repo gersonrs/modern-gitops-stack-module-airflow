@@ -2,6 +2,24 @@
 ## Standard variables
 #######################
 
+variable "project_source_repo" {
+  description = "Repository allowed to be scraped in this AppProject."
+  type        = string
+  default     = "https://github.com/GersonRS/modern-gitops-stack-module-airflow.git"
+}
+
+variable "namespace" {
+  description = "Namespace where the applications's Kubernetes resources should be created. Namespace will be created in case it doesn't exist."
+  type        = string
+  default     = "orchestrator"
+}
+
+variable "argocd_namespace" {
+  description = "Namespace used by Argo CD where the Application and AppProject resources should be created."
+  type        = string
+  default     = "argocd"
+}
+
 variable "cluster_name" {
   description = "Name given to the cluster. Value used for naming some the resources created by the module."
   type        = string
