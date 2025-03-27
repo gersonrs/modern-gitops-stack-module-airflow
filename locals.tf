@@ -208,7 +208,7 @@ locals {
         - name:  AIRFLOW__ASTRO_SDK__XCOM_STORAGE_CONN_ID
           value: "conn_minio_s3"
         - name:  AIRFLOW__ASTRO_SDK__XCOM_STORAGE_URL
-          value: "s3://airflow/xcom/"
+          value: "s3://airflow/xcom"
         - name:  AIRFLOW__CORE__XCOM_BACKEND
           value: "astro.custom_backend.astro_custom_backend.AstroCustomXcomBackend"
 
