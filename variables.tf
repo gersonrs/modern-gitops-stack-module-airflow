@@ -166,3 +166,15 @@ variable "home_ssh" {
   type        = string
   default     = "/home/gerson/.ssh/id_ed25519" # change here
 }
+
+variable "gitsync" {
+  description = "gitsync configuration"
+  type = object({
+    repo   = string
+    branch = string
+  })
+  default = {
+    repo   = "git@github.com:GersonRS/airflow-dags.git"
+    branch = var.target_revision == "develop" ? "develop" : "main"
+  }
+}
