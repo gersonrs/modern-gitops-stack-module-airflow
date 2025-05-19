@@ -175,6 +175,6 @@ variable "gitsync" {
   })
   default = {
     repo   = "git@github.com:GersonRS/airflow-dags.git"
-    branch = var.target_revision == "develop" ? "develop" : "main"
+    branch = "main"
   }
 }
