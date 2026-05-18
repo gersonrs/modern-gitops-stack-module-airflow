@@ -76,23 +76,7 @@ locals {
       #   enabled = false
       # }
       ingress = {
-        enabled = true
-        web = {
-          enabled = true
-          annotations = {
-            "cert-manager.io/cluster-issuer"                   = "${var.cluster_issuer}"
-            "traefik.ingress.kubernetes.io/router.entrypoints" = "websecure"
-            "traefik.ingress.kubernetes.io/router.tls"         = "true"
-          }
-          hosts = [{
-            name = local.domain_full
-            tls = {
-              enabled    = true
-              secretName = "airflow-tls-ingress"
-            }
-          }]
-          ingressClassName = "traefik"
-        }
+        enabled = false
       }
       pgbouncer = {
         enabled = true
@@ -267,6 +251,7 @@ locals {
                 "Viewer": ["Viewer"],
                 "Admin": ["Admin"],
                 "User": ["User"],
+                "Op": ["Op"],
             }
 
             OAUTH_PROVIDERS = [{
@@ -290,12 +275,14 @@ locals {
             }]
             def map_roles(team_list):
                 team_role_map = {
-                    "modern-gitops-stack-viewer": AUTH_ROLE_VIEWER,
                     "modern-gitops-stack-admins": AUTH_ROLE_ADMIN,
-                    "modern-gitops-stack-public": AUTH_ROLE_PUBLIC,
-                    "modern-gitops-stack-user": AUTH_ROLE_USER,
+                    "modern-gitops-stack-editors": "Op",
+                    "modern-gitops-stack-data-engineers": "Op",
+                    "modern-gitops-stack-ml-engineers": "User",
+                    "modern-gitops-stack-data-scientists": "User",
+                    "modern-gitops-stack-viewers": AUTH_ROLE_VIEWER,
                 }
-                return list(set(team_role_map.get(team, AUTH_ROLE_VIEWER) for team in team_list))
+                return list(set(team_role_map[team] for team in team_list if team in team_role_map))
             class CustomSecurityManager(AirflowSecurityManager):
                 def get_oauth_user_info(self, provider, resp):
                     me = self.oauth_remotes[provider].get("openid-connect/userinfo")
@@ -307,7 +294,7 @@ locals {
                     groups = map_roles(data.get("groups", []))
 
                     if groups is None or len(groups) < 1:
-                        groups = ["User"]
+                        groups = [AUTH_ROLE_PUBLIC]
 
                     log.info("User groups info: %s", groups)
                     return {
@@ -406,6 +393,17 @@ locals {
       #   - secretRef:
       #       name: "airflow-airflow-connections"
       # EOT
+    }
+  }]
+
+  helm_values_httproute = [{
+    httproute = {
+      enabled           = true
+      host              = local.domain
+      gateway_name      = var.gateway_name
+      gateway_namespace = var.gateway_namespace
+      backend_service   = "airflow-webserver"
+      backend_port      = 8080
     }
   }]
 }
