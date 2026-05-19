@@ -12,9 +12,9 @@ resource "random_password" "airflow_webserver_secret_key" {
 resource "kubernetes_namespace" "airflow_namespace" {
   metadata {
     annotations = {
-      name = "airflow"
+      name = var.namespace
     }
-    name = "airflow"
+    name = var.namespace
   }
   depends_on = [
     resource.null_resource.dependencies,
@@ -24,7 +24,7 @@ resource "kubernetes_namespace" "airflow_namespace" {
 resource "kubernetes_secret" "airflow_ssh_secret" {
   metadata {
     name      = "airflow-ssh-secret"
-    namespace = "airflow"
+    namespace = var.namespace
   }
 
   data = {
@@ -39,19 +39,19 @@ resource "argocd_project" "this" {
 
   metadata {
     name      = var.destination_cluster != "in-cluster" ? "airflow-${var.destination_cluster}" : "airflow"
-    namespace = "argocd"
+    namespace = var.argocd_namespace
     annotations = {
-      "modern-gitops-stack.io/argocd_namespace" = "argocd"
+      "modern-gitops-stack.io/argocd_namespace" = var.argocd_namespace
     }
   }
 
   spec {
     description  = "Airflow application project for cluster ${var.destination_cluster}"
-    source_repos = ["https://github.com/GersonRS/modern-gitops-stack-module-airflow.git"]
+    source_repos = [var.project_source_repo]
 
     destination {
       name      = var.destination_cluster
-      namespace = "airflow"
+      namespace = var.namespace
     }
 
     orphaned_resources {
@@ -66,13 +66,13 @@ resource "argocd_project" "this" {
 }
 
 data "utils_deep_merge_yaml" "values" {
-  input = [for i in concat(local.helm_values, var.helm_values) : yamlencode(i)]
+  input = [for i in concat(local.helm_values, local.helm_values_httproute, var.helm_values) : yamlencode(i)]
 }
 
 resource "argocd_application" "this" {
   metadata {
     name      = var.destination_cluster != "in-cluster" ? "airflow-${var.destination_cluster}" : "airflow"
-    namespace = "argocd"
+    namespace = var.argocd_namespace
     labels = merge({
       "application" = "airflow"
       "cluster"     = var.destination_cluster
@@ -90,7 +90,7 @@ resource "argocd_application" "this" {
     project = var.argocd_project == null ? argocd_project.this[0].metadata.0.name : var.argocd_project
 
     source {
-      repo_url        = "https://github.com/GersonRS/modern-gitops-stack-module-airflow.git"
+      repo_url        = var.project_source_repo
       path            = "charts/airflow"
       target_revision = var.target_revision
       helm {
@@ -100,7 +100,7 @@ resource "argocd_application" "this" {
 
     destination {
       name      = var.destination_cluster
-      namespace = "airflow"
+      namespace = var.namespace
     }
 
     sync_policy {

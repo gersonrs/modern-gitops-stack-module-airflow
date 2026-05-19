@@ -2,6 +2,24 @@
 ## Standard variables
 #######################
 
+variable "project_source_repo" {
+  description = "Repository allowed to be scraped in this AppProject."
+  type        = string
+  default     = "https://github.com/GersonRS/modern-gitops-stack-module-airflow.git"
+}
+
+variable "namespace" {
+  description = "Namespace where the applications's Kubernetes resources should be created. Namespace will be created in case it doesn't exist."
+  type        = string
+  default     = "orchestrator"
+}
+
+variable "argocd_namespace" {
+  description = "Namespace used by Argo CD where the Application and AppProject resources should be created."
+  type        = string
+  default     = "argocd"
+}
+
 variable "cluster_name" {
   description = "Name given to the cluster. Value used for naming some the resources created by the module."
   type        = string
@@ -147,4 +165,28 @@ variable "home_ssh" {
   description = "home ssh"
   type        = string
   default     = "/home/gerson/.ssh/id_ed25519" # change here
+}
+
+variable "gitsync" {
+  description = "gitsync configuration"
+  type = object({
+    repo   = string
+    branch = string
+  })
+  default = {
+    repo   = "git@github.com:GersonRS/airflow-dags.git"
+    branch = "main"
+  }
+}
+
+variable "gateway_name" {
+  description = "Name of the Istio Gateway resource to attach HTTPRoutes to."
+  type        = string
+  default     = "istio-gateway"
+}
+
+variable "gateway_namespace" {
+  description = "Namespace where the Istio Gateway resource is deployed."
+  type        = string
+  default     = "istio-ingress"
 }
