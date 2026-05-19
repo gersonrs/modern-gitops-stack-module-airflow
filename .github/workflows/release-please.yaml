@@ -10,4 +10,4 @@ jobs:
   release:
     uses: GersonRS/modern-gitops-stack/.github/workflows/modules-release-please.yaml@main
     secrets:
-      PAT: ${{ secrets.PAT }}
+      PROJECT_APP_PRIVATE_KEY: ${{ secrets.PROJECT_APP_PRIVATE_KEY }}
