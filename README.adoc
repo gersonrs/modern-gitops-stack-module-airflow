@@ -7,7 +7,7 @@ The following requirements are needed by this module:
 
 - [[requirement_argocd]] <<requirement_argocd,argocd>> (>= 6)
 
-- [[requirement_helm]] <<requirement_helm,helm>> (~> 2)
+- [[requirement_helm]] <<requirement_helm,helm>> (>= 2)
 
 - [[requirement_null]] <<requirement_null,null>> (>= 3)
 
@@ -98,6 +98,30 @@ object({
 
 The following input variables are optional (have default values):
 
+==== [[input_project_source_repo]] <<input_project_source_repo,project_source_repo>>
+
+Description: Repository allowed to be scraped in this AppProject.
+
+Type: `string`
+
+Default: `"https://github.com/GersonRS/modern-gitops-stack-module-airflow.git"`
+
+==== [[input_namespace]] <<input_namespace,namespace>>
+
+Description: Namespace where the applications's Kubernetes resources should be created. Namespace will be created in case it doesn't exist.
+
+Type: `string`
+
+Default: `"orchestrator"`
+
+==== [[input_argocd_namespace]] <<input_argocd_namespace,argocd_namespace>>
+
+Description: Namespace used by Argo CD where the Application and AppProject resources should be created.
+
+Type: `string`
+
+Default: `"argocd"`
+
 ==== [[input_subdomain]] <<input_subdomain,subdomain>>
 
 Description: Subdomain of the cluster. Value used for the ingress' URL of the application.
@@ -136,7 +160,7 @@ Description: Override of target revision of the application chart.
 
 Type: `string`
 
-Default: `"v1.6.2"`
+Default: `"v1.7.0"`
 
 ==== [[input_cluster_issuer]] <<input_cluster_issuer,cluster_issuer>>
 
@@ -250,6 +274,44 @@ Type: `string`
 
 Default: `"/home/gerson/.ssh/id_ed25519"`
 
+==== [[input_gitsync]] <<input_gitsync,gitsync>>
+
+Description: gitsync configuration
+
+Type:
+[source,hcl]
+----
+object({
+    repo   = string
+    branch = string
+  })
+----
+
+Default:
+[source,json]
+----
+{
+  "branch": "main",
+  "repo": "git@github.com:GersonRS/airflow-dags.git"
+}
+----
+
+==== [[input_gateway_name]] <<input_gateway_name,gateway_name>>
+
+Description: Name of the Istio Gateway resource to attach HTTPRoutes to.
+
+Type: `string`
+
+Default: `"istio-gateway"`
+
+==== [[input_gateway_namespace]] <<input_gateway_namespace,gateway_namespace>>
+
+Description: Namespace where the Istio Gateway resource is deployed.
+
+Type: `string`
+
+Default: `"istio-ingress"`
+
 === Outputs
 
 The following outputs are exported:
@@ -271,7 +333,7 @@ Description: ID to pass other modules in order to refer to this module as a depe
 |===
 |Name |Version
 |[[requirement_argocd]] <<requirement_argocd,argocd>> |>= 6
-|[[requirement_helm]] <<requirement_helm,helm>> |~> 2
+|[[requirement_helm]] <<requirement_helm,helm>> |>= 2
 |[[requirement_null]] <<requirement_null,null>> |>= 3
 |[[requirement_random]] <<requirement_random,random>> |>= 3
 |[[requirement_utils]] <<requirement_utils,utils>> |>= 1
@@ -309,6 +371,24 @@ Description: ID to pass other modules in order to refer to this module as a depe
 [cols="a,a,a,a,a",options="header,autowidth"]
 |===
 |Name |Description |Type |Default |Required
+|[[input_project_source_repo]] <<input_project_source_repo,project_source_repo>>
+|Repository allowed to be scraped in this AppProject.
+|`string`
+|`"https://github.com/GersonRS/modern-gitops-stack-module-airflow.git"`
+|no
+
+|[[input_namespace]] <<input_namespace,namespace>>
+|Namespace where the applications's Kubernetes resources should be created. Namespace will be created in case it doesn't exist.
+|`string`
+|`"orchestrator"`
+|no
+
+|[[input_argocd_namespace]] <<input_argocd_namespace,argocd_namespace>>
+|Namespace used by Argo CD where the Application and AppProject resources should be created.
+|`string`
+|`"argocd"`
+|no
+
 |[[input_cluster_name]] <<input_cluster_name,cluster_name>>
 |Name given to the cluster. Value used for naming some the resources created by the module.
 |`string`
@@ -348,7 +428,7 @@ Description: ID to pass other modules in order to refer to this module as a depe
 |[[input_target_revision]] <<input_target_revision,target_revision>>
 |Override of target revision of the application chart.
 |`string`
-|`"v1.6.2"`
+|`"v1.7.0"`
 |no
 
 |[[input_cluster_issuer]] <<input_cluster_issuer,cluster_issuer>>
@@ -493,6 +573,42 @@ object({
 |home ssh
 |`string`
 |`"/home/gerson/.ssh/id_ed25519"`
+|no
+
+|[[input_gitsync]] <<input_gitsync,gitsync>>
+|gitsync configuration
+|
+
+[source]
+----
+object({
+    repo   = string
+    branch = string
+  })
+----
+
+|
+
+[source]
+----
+{
+  "branch": "main",
+  "repo": "git@github.com:GersonRS/airflow-dags.git"
+}
+----
+
+|no
+
+|[[input_gateway_name]] <<input_gateway_name,gateway_name>>
+|Name of the Istio Gateway resource to attach HTTPRoutes to.
+|`string`
+|`"istio-gateway"`
+|no
+
+|[[input_gateway_namespace]] <<input_gateway_namespace,gateway_namespace>>
+|Namespace where the Istio Gateway resource is deployed.
+|`string`
+|`"istio-ingress"`
 |no
 
 |===

@@ -1,5 +1,36 @@
 # Changelog
 
+## [1.7.0](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v1.6.2...v1.7.0) (2026-05-19)
+
+
+### 🚀 New Features
+
+* adjust git sync ([ce4089f](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/ce4089f16e73325a0abf6565ce8b0870bff01703))
+* adjust gitsync branch ([477e37d](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/477e37d350a68d99b4112f9c0aeb29449935bd11))
+* migrate ingress to Istio HTTPRoute and fix OIDC group role mapping ([5e86834](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/5e86834365277ac25c99721a7bbbd0e4fd22bfe3))
+* migrate to Istio HTTPRoute and fix OIDC group role mapping ([4417e9d](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/4417e9d0f73d28aa0d3f9b17d22965f8e67f118d))
+* update airflow image ([4752672](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/47526724b4d3688abea60de96975b323960b0f0f))
+* update code ([a48e4da](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/a48e4dadfec3a979b6ed7b39d2ff459ba3874157))
+* update code ([e4fba57](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/e4fba57010a831a57935f438ae4bc76c5c45b33b))
+* video hand-on ([e7f2903](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/e7f2903a2bf2431aa17b3c80b671e3b4d5070a83))
+
+
+### 🔥 Bug Fixes
+
+* fix scom storage url ([90ac73c](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/90ac73c289274c5eef67a30082f80ec36174c9b9))
+* gitsync branch name ([54d9aa9](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/54d9aa9526cb377cb7252881e5b4410d2ed810af))
+* relax helm provider constraint to &gt;= 2 to allow v3 ([d6de593](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/d6de5937809b536c014e160d8a78377ea5e5b363))
+* update release-please workflow to use PROJECT_APP_PRIVATE_KEY secret ([b9bb221](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/b9bb2214dc0adf01ceb4f3ed1652b86b906b3a5a))
+* update release-please workflow to use PROJECT_APP_PRIVATE_KEY secret ([65078a9](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/65078a9c9dec0d43fd32aea6384d4e9e5a48f282))
+
+
+### ⌨️ Code Refactoring
+
+* add new var ([315104f](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/315104f8e2116471242c39a6f35a631a9f33b344))
+* add new var ([0b7f85c](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/0b7f85cecb9ead256ead80c8fdda98985b515f78))
+* update airflow image ([3a26c33](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/3a26c33bcbe38aff4a4772c17c0e562b5d64c5f9))
+* update airflow image ([c5ff41c](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/c5ff41ccacf44eb763d5324b904f57fb919beaf2))
+
 ## [1.6.2](https://github.com/GersonRS/modern-gitops-stack-module-airflow/compare/v1.6.1...v1.6.2) (2025-02-08)
 
 
