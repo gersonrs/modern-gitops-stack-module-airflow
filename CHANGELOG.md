@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.8.0](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v1.7.0...v1.8.0) (2026-07-11)
+
+
+### 🚀 New Features
+
+* add namespace_labels variable to all modules ([dd0bbc7](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/dd0bbc7fe18cfcf1979a3dea064d35bc928244e0))
+* add namespace_labels variable to all modules ([693c608](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/693c608e914a185de1db56cfa531585a176c4965))
+
 ## [1.7.0](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v1.6.2...v1.7.0) (2026-05-19)
 
 
