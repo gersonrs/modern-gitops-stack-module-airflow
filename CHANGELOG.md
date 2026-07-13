@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.8.1](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v1.8.0...v1.8.1) (2026-07-13)
+
+
+### 🔥 Bug Fixes
+
+* adjust conection with fix image ([a9743a1](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/a9743a1cc74286578b1badf6c557756a5fa83d2b))
+* adjust conection with fix image ([29727a3](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/29727a35d1520026467cc4fde6fe54aac4ae9d33))
+
 ## [1.8.0](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v1.7.0...v1.8.0) (2026-07-11)
 
 
