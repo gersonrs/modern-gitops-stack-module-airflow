@@ -311,7 +311,7 @@ locals {
         EOT
         extraInitContainers = [
           {
-            image           = "apache/airflow:latest"
+            image           = "gersonrs/airflow:v1.5.4"
             imagePullPolicy = "IfNotPresent"
             resources       = {}
             env = concat([
