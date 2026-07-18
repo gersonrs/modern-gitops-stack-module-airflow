@@ -177,11 +177,6 @@ locals {
           EOT
         }
       }
-      extraEnvFrom = {
-        secretRef = {
-          name = "airflow-airflow-connections"
-        }
-      }
       extraEnv = <<-EOT
         - name: AIRFLOW__LOGGING__REMOTE_LOGGING
           value: "True"
@@ -218,13 +213,16 @@ locals {
               conn=$(airflow connections list)
               if [ "$conn" = "No data found" ]; then
                 connections=$(env | grep "^conn_" | sort)
-                echo $connections | tr " " "\n" > .env
-                airflow connections import .env
+                echo $connections | tr " " "\n" > conn.env
+                cat conn.env
+                airflow connections import conn.env
+              else
+                airflow connections list
               fi
           EOT
         }
       }
-      webserver = {
+      apiServer = {
         env = [
           {
             name  = "OAUTH2_METADATA_URL"
@@ -235,9 +233,8 @@ locals {
             value = "${var.oidc.issuer_url}/.well-known/openid-configuration"
           }
         ]
-        webserverConfig = <<-EOT
-            from airflow.www.security import AirflowSecurityManager
-            from airflow.www.security_manager import AirflowSecurityManagerV2
+        apiServerConfig = <<-EOT
+            from airflow.providers.fab.auth_manager.security_manager.override import FabAirflowSecurityManagerOverride
             from flask_appbuilder.security.manager import AUTH_OAUTH
             import logging
             import os
@@ -295,8 +292,8 @@ locals {
                     "modern-gitops-stack-viewers": AUTH_ROLE_VIEWER,
                 }
                 return list(set(team_role_map[team] for team in team_list if team in team_role_map))
-            class CustomSecurityManager(AirflowSecurityManager):
-                def get_oauth_user_info(self, provider, resp):
+            class CustomSecurityManager(FabAirflowSecurityManagerOverride):
+                def get_oauth_user_info(self, provider, resp=None):
                     me = self.oauth_remotes[provider].get("openid-connect/userinfo")
                     me.raise_for_status()
                     data = me.json()
@@ -321,88 +318,88 @@ locals {
             # Make sure to replace this with your own implementation of AirflowSecurityManager class
             SECURITY_MANAGER_CLASS = CustomSecurityManager
         EOT
-        # extraInitContainers = [
-        #   {
-        #     image           = "gersonrs/airflow:${local.tag}"
-        #     imagePullPolicy = "IfNotPresent"
-        #     resources       = {}
-        #     env = concat([
-        #       for config in local.secret : {
-        #         name = config.envName
-        #         valueFrom = {
-        #           secretKeyRef = {
-        #             name = config.secretName
-        #             key  = config.secretKey
-        #           }
-        #         }
-        #       }
-        #       ], [
-        #       {
-        #         name = "AIRFLOW__CORE__SQL_ALCHEMY_CONN"
-        #         valueFrom = {
-        #           secretKeyRef = {
-        #             name = "airflow-metadata-secret"
-        #             key  = "connection"
-        #           }
-        #         }
-        #       },
-        #       {
-        #         name = "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN"
-        #         valueFrom = {
-        #           secretKeyRef = {
-        #             name = "airflow-metadata-secret"
-        #             key  = "connection"
-        #           }
-        #         }
-        #       },
-        #       {
-        #         name = "AIRFLOW_CONN_AIRFLOW_DB"
-        #         valueFrom = {
-        #           secretKeyRef = {
-        #             name = "airflow-metadata-secret"
-        #             key  = "connection"
-        #           }
-        #         }
-        #       },
-        #       {
-        #         name = "AIRFLOW__WEBSERVER__SECRET_KEY"
-        #         valueFrom = {
-        #           secretKeyRef = {
-        #             name = "my-webserver-secret"
-        #             key  = "webserver-secret-key"
-        #           }
-        #         }
-        #       },
-        #       {
-        #         name = "AIRFLOW__CORE__FERNET_KEY"
-        #         valueFrom = {
-        #           secretKeyRef = {
-        #             name = "airflow-fernet-key"
-        #             key  = "fernet-key"
-        #           }
-        #         }
-        #       },
-        #     ])
-        #     name = "config-connections"
-        #     args = [
-        #       "bash",
-        #       "/opt/airflow/script.sh"
-        #     ]
-        #     volumeMounts = [
-        #       {
-        #         name = "airflow-airflow-connections"
-        #         mountPath : "/opt/airflow/script.sh"
-        #         subPath : "script.sh"
-        #         readOnly : true
-        #       }
-        #     ]
-        #   }
-        # ]
+        extraInitContainers = [
+          {
+            image           = "gersonrs/airflow:${local.tag}"
+            imagePullPolicy = "IfNotPresent"
+            resources       = {}
+            env = concat([
+              for config in local.secret : {
+                name = config.envName
+                valueFrom = {
+                  secretKeyRef = {
+                    name = config.secretName
+                    key  = config.secretKey
+                  }
+                }
+              }
+              ], [
+              {
+                name = "AIRFLOW__CORE__SQL_ALCHEMY_CONN"
+                valueFrom = {
+                  secretKeyRef = {
+                    name = "airflow-metadata-secret"
+                    key  = "connection"
+                  }
+                }
+              },
+              {
+                name = "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN"
+                valueFrom = {
+                  secretKeyRef = {
+                    name = "airflow-metadata-secret"
+                    key  = "connection"
+                  }
+                }
+              },
+              {
+                name = "AIRFLOW_CONN_AIRFLOW_DB"
+                valueFrom = {
+                  secretKeyRef = {
+                    name = "airflow-metadata-secret"
+                    key  = "connection"
+                  }
+                }
+              },
+              {
+                name = "AIRFLOW__WEBSERVER__SECRET_KEY"
+                valueFrom = {
+                  secretKeyRef = {
+                    name = "my-webserver-secret"
+                    key  = "webserver-secret-key"
+                  }
+                }
+              },
+              {
+                name = "AIRFLOW__CORE__FERNET_KEY"
+                valueFrom = {
+                  secretKeyRef = {
+                    name = "airflow-fernet-key"
+                    key  = "fernet-key"
+                  }
+                }
+              },
+            ])
+            name = "config-connections"
+            args = [
+              "bash",
+              "/opt/airflow/script.sh"
+            ]
+            volumeMounts = [
+              {
+                name = "airflow-airflow-connections"
+                mountPath : "/opt/airflow/script.sh"
+                subPath : "script.sh"
+                readOnly : true
+              }
+            ]
+          }
+        ]
       }
-      extraEnvFrom = <<-EOT
-        - secretRef:
-            name: "airflow-airflow-connections"
-      EOT
+      # extraEnvFrom = <<-EOT
+      #   - secretRef:
+      #       name: "airflow-airflow-connections"
+      # EOT
     }
   }]
 
