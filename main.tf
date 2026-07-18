@@ -14,6 +14,9 @@ resource "kubernetes_namespace" "airflow_namespace" {
     annotations = {
       name = var.namespace
     }
+    labels = {
+      "istio.io/dataplane-mode" = "ambient"
+    }
     name = var.namespace
   }
   depends_on = [

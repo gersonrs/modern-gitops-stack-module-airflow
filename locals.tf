@@ -206,9 +206,9 @@ locals {
         - name:  AIRFLOW__ASTRO_SDK__XCOM_STORAGE_URL
           value: "s3://airflow/xcom"
         - name:  AIRFLOW__CORE__XCOM_BACKEND
-          value: "astro.custom_backend.astro_custom_backend.AstroCustomXcomBackend"
-
-
+          value: "airflow.providers.common.io.xcom.backend.XComObjectStorageBackend"
+        - name: AIRFLOW__COMMON_IO__XCOM_OBJECTSTORAGE_PATH
+          value: "s3://conn_minio_s3@airflow/xcom"
       EOT
       extraConfigMaps = {
         airflow-airflow-connections = {
@@ -399,12 +399,10 @@ locals {
         #   }
         # ]
       }
-      # extraEnvFrom = <<-EOT
-      #   - configMapRef:
-      #       name: "airflow-airflow-variables"
-      #   - secretRef:
-      #       name: "airflow-airflow-connections"
-      # EOT
+      extraEnvFrom = <<-EOT
+        - secretRef:
+            name: "airflow-airflow-connections"
+      EOT
     }
   }]
 
@@ -414,7 +412,7 @@ locals {
       host              = local.domain
       gateway_name      = var.gateway_name
       gateway_namespace = var.gateway_namespace
-      backend_service   = "airflow-webserver"
+      backend_service   = "airflow-api-server"
       backend_port      = 8080
     }
   }]
