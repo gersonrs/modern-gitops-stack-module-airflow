@@ -1,4 +1,7 @@
 locals {
+
+  tag = "v1.8.0"
+
   domain      = format("airflow.%s", trimprefix("${var.subdomain}.${var.base_domain}", "."))
   domain_full = format("airflow.%s.%s", trimprefix("${var.subdomain}.${var.cluster_name}", "."), var.base_domain)
 
@@ -41,7 +44,7 @@ locals {
       images = {
         airflow = {
           repository = "gersonrs/airflow"
-          tag        = "v1.5.4"
+          tag        = local.tag
         }
       }
       volumes = [
@@ -115,6 +118,10 @@ locals {
       }
       env = [
         {
+          name  = "AIRFLOW_CONN_POSTGRES_TESTE"
+          value = "${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/teste")}"
+        },
+        {
           name  = "MLFLOW_TRACKING_URI"
           value = var.mlflow != null ? "http://${var.mlflow.endpoint}:5000" : "http://localhost:5000"
         },
@@ -168,6 +175,11 @@ locals {
             AIRFLOW_CONN_POSTEGRES_FEATURE_STORE: ${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/feature_store")}
             AIRFLOW_CONN_MLFLOW: ${local.mlflow}
           EOT
+        }
+      }
+      extraEnvFrom = {
+        secretRef = {
+          name = "airflow-airflow-connections"
         }
       }
       extraEnv = <<-EOT
@@ -309,83 +321,83 @@ locals {
             # Make sure to replace this with your own implementation of AirflowSecurityManager class
             SECURITY_MANAGER_CLASS = CustomSecurityManager
         EOT
-        extraInitContainers = [
-          {
-            image           = "gersonrs/airflow:v1.5.4"
-            imagePullPolicy = "IfNotPresent"
-            resources       = {}
-            env = concat([
-              for config in local.secret : {
-                name = config.envName
-                valueFrom = {
-                  secretKeyRef = {
-                    name = config.secretName
-                    key  = config.secretKey
-                  }
-                }
-              }
-              ], [
-              {
-                name = "AIRFLOW__CORE__SQL_ALCHEMY_CONN"
-                valueFrom = {
-                  secretKeyRef = {
-                    name = "airflow-metadata-secret"
-                    key  = "connection"
-                  }
-                }
-              },
-              {
-                name = "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN"
-                valueFrom = {
-                  secretKeyRef = {
-                    name = "airflow-metadata-secret"
-                    key  = "connection"
-                  }
-                }
-              },
-              {
-                name = "AIRFLOW_CONN_AIRFLOW_DB"
-                valueFrom = {
-                  secretKeyRef = {
-                    name = "airflow-metadata-secret"
-                    key  = "connection"
-                  }
-                }
-              },
-              {
-                name = "AIRFLOW__WEBSERVER__SECRET_KEY"
-                valueFrom = {
-                  secretKeyRef = {
-                    name = "my-webserver-secret"
-                    key  = "webserver-secret-key"
-                  }
-                }
-              },
-              {
-                name = "AIRFLOW__CORE__FERNET_KEY"
-                valueFrom = {
-                  secretKeyRef = {
-                    name = "airflow-fernet-key"
-                    key  = "fernet-key"
-                  }
-                }
-              },
-            ])
-            name = "config-connections"
-            args = [
-              "bash",
-              "/opt/airflow/script.sh"
-            ]
-            volumeMounts = [
-              {
-                name = "airflow-airflow-connections"
-                mountPath : "/opt/airflow/script.sh"
-                subPath : "script.sh"
-                readOnly : true
-              }
-            ]
-          }
-        ]
+        # extraInitContainers = [
+        #   {
+        #     image           = "gersonrs/airflow:${local.tag}"
+        #     imagePullPolicy = "IfNotPresent"
+        #     resources       = {}
+        #     env = concat([
+        #       for config in local.secret : {
+        #         name = config.envName
+        #         valueFrom = {
+        #           secretKeyRef = {
+        #             name = config.secretName
+        #             key  = config.secretKey
+        #           }
+        #         }
+        #       }
+        #       ], [
+        #       {
+        #         name = "AIRFLOW__CORE__SQL_ALCHEMY_CONN"
+        #         valueFrom = {
+        #           secretKeyRef = {
+        #             name = "airflow-metadata-secret"
+        #             key  = "connection"
+        #           }
+        #         }
+        #       },
+        #       {
+        #         name = "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN"
+        #         valueFrom = {
+        #           secretKeyRef = {
+        #             name = "airflow-metadata-secret"
+        #             key  = "connection"
+        #           }
+        #         }
+        #       },
+        #       {
+        #         name = "AIRFLOW_CONN_AIRFLOW_DB"
+        #         valueFrom = {
+        #           secretKeyRef = {
+        #             name = "airflow-metadata-secret"
+        #             key  = "connection"
+        #           }
+        #         }
+        #       },
+        #       {
+        #         name = "AIRFLOW__WEBSERVER__SECRET_KEY"
+        #         valueFrom = {
+        #           secretKeyRef = {
+        #             name = "my-webserver-secret"
+        #             key  = "webserver-secret-key"
+        #           }
+        #         }
+        #       },
+        #       {
+        #         name = "AIRFLOW__CORE__FERNET_KEY"
+        #         valueFrom = {
+        #           secretKeyRef = {
+        #             name = "airflow-fernet-key"
+        #             key  = "fernet-key"
+        #           }
+        #         }
+        #       },
+        #     ])
+        #     name = "config-connections"
+        #     args = [
+        #       "bash",
+        #       "/opt/airflow/script.sh"
+        #     ]
+        #     volumeMounts = [
+        #       {
+        #         name = "airflow-airflow-connections"
+        #         mountPath : "/opt/airflow/script.sh"
+        #         subPath : "script.sh"
+        #         readOnly : true
+        #       }
+        #     ]
+        #   }
+        # ]
       }
       # extraEnvFrom = <<-EOT
       #   - configMapRef:
