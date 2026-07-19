@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.9.0](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v1.8.1...v1.9.0) (2026-07-19)
+
+
+### 🚀 New Features
+
+* adjus code ([943402a](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/943402ad5d6fa49b7debf6ff6a565f07ab392ce4))
+* adjust code ([1dea484](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/1dea484d3b8813c25080a95f7d43113c8122b051))
+* adjust repo ([16480bf](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/16480bf2be8b399a1dd2af8c1e642c0e6414cabc))
+* update chart ([5ebeda8](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/5ebeda84a0b2c0d4376569f46be66fafcca7b281))
+* update repo ([dcf9a4b](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/dcf9a4bb064ab287cd18d5d8b00a853b1ff4e6fc))
+
 ## [1.8.1](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v1.8.0...v1.8.1) (2026-07-13)
 
 
