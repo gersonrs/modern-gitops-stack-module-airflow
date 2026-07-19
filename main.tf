@@ -2,7 +2,7 @@ resource "null_resource" "dependencies" {
   triggers = var.dependency_ids
 }
 
-resource "random_password" "airflow_webserver_secret_key" {
+resource "random_password" "airflow_api_secret_key" {
   length  = 16
   special = false
   depends_on = [
@@ -12,7 +12,11 @@ resource "random_password" "airflow_webserver_secret_key" {
 resource "kubernetes_namespace" "airflow_namespace" {
   metadata {
     annotations = {
-      name = var.namespace
+      name                              = var.namespace
+      "argocd.argoproj.io/sync-options" = "ServerSideApply=true"
+    }
+    labels = {
+      "istio.io/dataplane-mode" = "ambient"
     }
     name = var.namespace
   }
@@ -128,12 +132,6 @@ resource "argocd_application" "this" {
         }
         limit = "5"
       }
-
-      sync_options = [
-        "CreateNamespace=true"
-      ]
-
-
     }
   }
 

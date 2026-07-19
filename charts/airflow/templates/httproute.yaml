@@ -13,6 +13,6 @@ spec:
     - {{ .Values.httproute.host | quote }}
   rules:
     - backendRefs:
-        - name: {{ .Values.httproute.backend_service | default "airflow-webserver" }}
+        - name: {{ .Values.httproute.backend_service | default "airflow-api-server" }}
           port: {{ .Values.httproute.backend_port | default 8080 }}
 {{- end }}

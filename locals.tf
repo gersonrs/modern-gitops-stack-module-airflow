@@ -1,47 +1,18 @@
 locals {
+
+  tag = "v1.8.0"
+
   domain      = format("airflow.%s", trimprefix("${var.subdomain}.${var.base_domain}", "."))
   domain_full = format("airflow.%s.%s", trimprefix("${var.subdomain}.${var.cluster_name}", "."), var.base_domain)
 
   mlflow = var.mlflow != null ? base64encode("http://${var.mlflow.endpoint}:5000/?__extra__=%7B%7D") : base64encode("http://localhost:5000")
-  secret = [
-    {
-      envName : "conn_minio_s3"
-      secretName : "airflow-airflow-connections"
-      secretKey : "AIRFLOW_CONN_MINIO_S3"
-    },
-    {
-      envName : "conn_kubernetes"
-      secretName : "airflow-airflow-connections"
-      secretKey : "AIRFLOW_CONN_KUBERNETES"
-    },
-    {
-      envName : "conn_curated"
-      secretName : "airflow-airflow-connections"
-      secretKey : "AIRFLOW_CONN_POSTEGRES_CURATED"
-    },
-    {
-      envName : "conn_feature_store"
-      secretName : "airflow-airflow-connections"
-      secretKey : "AIRFLOW_CONN_POSTEGRES_FEATURE_STORE"
-    },
-    {
-      envName : "conn_data"
-      secretName : "airflow-airflow-connections"
-      secretKey : "AIRFLOW_CONN_POSTEGRES_DATA"
-    },
-    {
-      envName : "conn_mlflow"
-      secretName : "airflow-airflow-connections"
-      secretKey : "AIRFLOW_CONN_MLFLOW"
-    }
-  ]
   helm_values = [{
     airflow = {
       fernetKey = "${var.fernetKey}"
       images = {
         airflow = {
           repository = "gersonrs/airflow"
-          tag        = "v1.5.4"
+          tag        = local.tag
         }
       }
       volumes = [
@@ -52,12 +23,19 @@ locals {
           }
         }
       ]
-      executor                     = "KubernetesExecutor"
-      webserverSecretKeySecretName = "my-webserver-secret"
+      executor               = "CeleryExecutor,KubernetesExecutor"
+      apiSecretKeySecretName = "airflow-api-secret-key"
 
       workers = {
-        replicas = 3
+        celery = {
+          replicas = 2
+          persistence = {
+            enabled = false
+            size    = "10Gi"
+          }
+        }
       }
+
       createUserJob = {
         useHelmHooks   = false
         applyCustomEnv = false
@@ -115,6 +93,10 @@ locals {
       }
       env = [
         {
+          name  = "AIRFLOW_CONN_POSTGRES_TESTE"
+          value = "${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/teste")}"
+        },
+        {
           name  = "MLFLOW_TRACKING_URI"
           value = var.mlflow != null ? "http://${var.mlflow.endpoint}:5000" : "http://localhost:5000"
         },
@@ -151,37 +133,20 @@ locals {
           value = "quiet"
         },
       ]
-      secret = local.secret
       extraSecrets = {
         airflow-metadata-secret = {
           data = "connection: ${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/${var.database.database}")}"
         }
-        my-webserver-secret = {
-          data = "webserver-secret-key: ${base64encode(resource.random_password.airflow_webserver_secret_key.result)}"
-        }
-        airflow-airflow-connections = {
-          data = <<-EOT
-            AIRFLOW_CONN_KUBERNETES: ${base64encode("kubernetes:///?__extra__=%7B%22in_cluster%22%3A+true%2C+%22disable_verify_ssl%22%3A+false%2C+%22disable_tcp_keepalive%22%3A+false%7D")}
-            AIRFLOW_CONN_MINIO_S3: ${base64encode("aws:///?region_name=eu-west-1&aws_access_key_id=${var.storage.access_key}&aws_secret_access_key=${var.storage.secret_access_key}&endpoint_url=http://${var.storage.endpoint}")}
-            AIRFLOW_CONN_POSTEGRES_CURATED: ${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/curated")}
-            AIRFLOW_CONN_POSTEGRES_DATA: ${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/data")}
-            AIRFLOW_CONN_POSTEGRES_FEATURE_STORE: ${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/feature_store")}
-            AIRFLOW_CONN_MLFLOW: ${local.mlflow}
-          EOT
+        airflow-api-secret-key = {
+          data = "api-secret-key: ${base64encode(resource.random_password.airflow_api_secret_key.result)}"
         }
       }
       extraEnv = <<-EOT
         - name: AIRFLOW__LOGGING__REMOTE_LOGGING
           value: "True"
-        - name: AIRFLOW__CORE__REMOTE_LOGGING
-          value: "True"
         - name: AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER
           value: "s3://airflow/logs"
-        - name: AIRFLOW__CORE__REMOTE_BASE_LOG_FOLDER
-          value: "s3://airflow/logs"
         - name: AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID
-          value: "conn_minio_s3"
-        - name: AIRFLOW__CORE__REMOTE_LOG_CONN_ID
           value: "conn_minio_s3"
         - name: AIRFLOW__KUBERNETES_EXECUTOR__DELETE_WORKER_PODS
           value: "True"
@@ -189,14 +154,14 @@ locals {
           value: "True"
         - name: AIRFLOW__CORE__ALLOWED_DESERIALIZATION_CLASSES
           value: airflow\.* astro\.*
-        - name:  AIRFLOW__ASTRO_SDK__XCOM_STORAGE_CONN_ID
-          value: "conn_minio_s3"
-        - name:  AIRFLOW__ASTRO_SDK__XCOM_STORAGE_URL
-          value: "s3://airflow/xcom"
-        - name:  AIRFLOW__CORE__XCOM_BACKEND
-          value: "astro.custom_backend.astro_custom_backend.AstroCustomXcomBackend"
-
-
+        - name: AIRFLOW__CORE__XCOM_BACKEND
+          value: "airflow.providers.common.io.xcom.backend.XComObjectStorageBackend"
+        - name: AIRFLOW__COMMON_IO__XCOM_OBJECTSTORAGE_PATH
+          value: "s3://conn_minio_s3@airflow/xcom"
+        - name: AIRFLOW__WORKERS__STATE_STORE_BACKEND
+          value: "airflow.providers.common.io.state_store.backend.StateStoreObjectStorageBackend"
+        - name: AIRFLOW__COMMON_IO__STATE_STORE_OBJECTSTORAGE_PATH
+          value: "s3://conn_minio_s3@airflow/state"
       EOT
       extraConfigMaps = {
         airflow-airflow-connections = {
@@ -206,13 +171,16 @@ locals {
               conn=$(airflow connections list)
               if [ "$conn" = "No data found" ]; then
                 connections=$(env | grep "^conn_" | sort)
-                echo $connections | tr " " "\n" > .env
-                airflow connections import .env
+                echo $connections | tr " " "\n" > conn.env
+                cat conn.env
+                airflow connections import conn.env
+              else
+                airflow connections list
               fi
           EOT
         }
       }
-      webserver = {
+      apiServer = {
         env = [
           {
             name  = "OAUTH2_METADATA_URL"
@@ -223,9 +191,8 @@ locals {
             value = "${var.oidc.issuer_url}/.well-known/openid-configuration"
           }
         ]
-        webserverConfig = <<-EOT
-            from airflow.www.security import AirflowSecurityManager
-            from airflow.www.security_manager import AirflowSecurityManagerV2
+        apiServerConfig = <<-EOT
+            from airflow.providers.fab.auth_manager.security_manager.override import FabAirflowSecurityManagerOverride
             from flask_appbuilder.security.manager import AUTH_OAUTH
             import logging
             import os
@@ -283,8 +250,8 @@ locals {
                     "modern-gitops-stack-viewers": AUTH_ROLE_VIEWER,
                 }
                 return list(set(team_role_map[team] for team in team_list if team in team_role_map))
-            class CustomSecurityManager(AirflowSecurityManager):
-                def get_oauth_user_info(self, provider, resp):
+            class CustomSecurityManager(FabAirflowSecurityManagerOverride):
+                def get_oauth_user_info(self, provider, resp=None):
                     me = self.oauth_remotes[provider].get("openid-connect/userinfo")
                     me.raise_for_status()
                     data = me.json()
@@ -311,28 +278,32 @@ locals {
         EOT
         extraInitContainers = [
           {
-            image           = "gersonrs/airflow:v1.5.4"
+            image           = "gersonrs/airflow:${local.tag}"
             imagePullPolicy = "IfNotPresent"
-            resources       = {}
-            env = concat([
-              for config in local.secret : {
-                name = config.envName
-                valueFrom = {
-                  secretKeyRef = {
-                    name = config.secretName
-                    key  = config.secretKey
-                  }
-                }
-              }
-              ], [
+            env = [
               {
-                name = "AIRFLOW__CORE__SQL_ALCHEMY_CONN"
-                valueFrom = {
-                  secretKeyRef = {
-                    name = "airflow-metadata-secret"
-                    key  = "connection"
-                  }
-                }
+                name  = "conn_kubernetes"
+                value = "${base64encode("kubernetes:///?__extra__=%7B%22in_cluster%22%3A+true%2C+%22disable_verify_ssl%22%3A+false%2C+%22disable_tcp_keepalive%22%3A+false%7D")}"
+              },
+              {
+                name  = "conn_minio_s3"
+                value = "${base64encode("aws:///?region_name=eu-west-1&aws_access_key_id=${var.storage.access_key}&aws_secret_access_key=${var.storage.secret_access_key}&endpoint_url=http://${var.storage.endpoint}")}"
+              },
+              {
+                name  = "conn_postegres_curated"
+                value = "${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/curated")}"
+              },
+              {
+                name  = "conn_postegres_data"
+                value = "${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/data")}"
+              },
+              {
+                name  = "conn_postegres_feature_store"
+                value = "${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/feature_store")}"
+              },
+              {
+                name  = "conn_mlflow"
+                value = "${local.mlflow}"
               },
               {
                 name = "AIRFLOW__DATABASE__SQL_ALCHEMY_CONN"
@@ -353,11 +324,11 @@ locals {
                 }
               },
               {
-                name = "AIRFLOW__WEBSERVER__SECRET_KEY"
+                name = "AIRFLOW__API__SECRET_KEY"
                 valueFrom = {
                   secretKeyRef = {
-                    name = "my-webserver-secret"
-                    key  = "webserver-secret-key"
+                    name = "airflow-api-secret-key"
+                    key  = "api-secret-key"
                   }
                 }
               },
@@ -370,7 +341,7 @@ locals {
                   }
                 }
               },
-            ])
+            ]
             name = "config-connections"
             args = [
               "bash",
@@ -388,8 +359,6 @@ locals {
         ]
       }
       # extraEnvFrom = <<-EOT
-      #   - configMapRef:
-      #       name: "airflow-airflow-variables"
       #   - secretRef:
       #       name: "airflow-airflow-connections"
       # EOT
@@ -402,7 +371,7 @@ locals {
       host              = local.domain
       gateway_name      = var.gateway_name
       gateway_namespace = var.gateway_namespace
-      backend_service   = "airflow-webserver"
+      backend_service   = "airflow-api-server"
       backend_port      = 8080
     }
   }]
