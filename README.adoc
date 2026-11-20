@@ -21,8 +21,6 @@ The following requirements are needed by this module:
 
 The following providers are used by this module:
 
-- [[provider_null]] <<provider_null,null>> (~> 3.3)
-
 - [[provider_random]] <<provider_random,random>> (~> 3.9)
 
 - [[provider_kubernetes]] <<provider_kubernetes,kubernetes>>
@@ -30,6 +28,8 @@ The following providers are used by this module:
 - [[provider_argocd]] <<provider_argocd,argocd>> (~> 7.18)
 
 - [[provider_utils]] <<provider_utils,utils>> (~> 2.7)
+
+- [[provider_null]] <<provider_null,null>> (~> 3.3)
 
 === Resources
 
@@ -162,7 +162,7 @@ Description: Override of target revision of the application chart.
 
 Type: `string`
 
-Default: `"v1.10.0"`
+Default: `"v2.0.0"`
 
 ==== [[input_cluster_issuer]] <<input_cluster_issuer,cluster_issuer>>
 
@@ -232,20 +232,6 @@ Default:
 {
   "istio.io/dataplane-mode": "ambient"
 }
-----
-
-==== [[input_app_sync_options]] <<input_app_sync_options,app_sync_options>>
-
-Description: Sync options for the Argo CD Application resource (e.g. DisableHook to prevent secret regeneration).
-
-Type: `list(string)`
-
-Default:
-[source,json]
-----
-[
-  "DisableHook"
-]
 ----
 
 ==== [[input_oidc]] <<input_oidc,oidc>>
@@ -375,11 +361,11 @@ Description: ID to pass other modules in order to refer to this module as a depe
 [cols="a,a",options="header,autowidth"]
 |===
 |Name |Version
-|[[provider_null]] <<provider_null,null>> |~> 3.3
 |[[provider_random]] <<provider_random,random>> |~> 3.9
 |[[provider_kubernetes]] <<provider_kubernetes,kubernetes>> |n/a
 |[[provider_argocd]] <<provider_argocd,argocd>> |~> 7.18
 |[[provider_utils]] <<provider_utils,utils>> |~> 2.7
+|[[provider_null]] <<provider_null,null>> |~> 3.3
 |===
 
 = Resources
@@ -459,7 +445,7 @@ Description: ID to pass other modules in order to refer to this module as a depe
 |[[input_target_revision]] <<input_target_revision,target_revision>>
 |Override of target revision of the application chart.
 |`string`
-|`"v1.10.0"`
+|`"v2.0.0"`
 |no
 
 |[[input_cluster_issuer]] <<input_cluster_issuer,cluster_issuer>>
@@ -522,20 +508,6 @@ object({
 {
   "istio.io/dataplane-mode": "ambient"
 }
-----
-
-|no
-
-|[[input_app_sync_options]] <<input_app_sync_options,app_sync_options>>
-|Sync options for the Argo CD Application resource (e.g. DisableHook to prevent secret regeneration).
-|`list(string)`
-|
-
-[source]
-----
-[
-  "DisableHook"
-]
 ----
 
 |no
