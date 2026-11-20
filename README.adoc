@@ -5,29 +5,31 @@
 
 The following requirements are needed by this module:
 
-- [[requirement_argocd]] <<requirement_argocd,argocd>> (>= 6)
+- [[requirement_terraform]] <<requirement_terraform,terraform>> (>= 1.9.0)
 
-- [[requirement_helm]] <<requirement_helm,helm>> (>= 2)
+- [[requirement_argocd]] <<requirement_argocd,argocd>> (~> 7.18)
 
-- [[requirement_null]] <<requirement_null,null>> (>= 3)
+- [[requirement_helm]] <<requirement_helm,helm>> (~> 3.3)
 
-- [[requirement_random]] <<requirement_random,random>> (>= 3)
+- [[requirement_null]] <<requirement_null,null>> (~> 3.3)
 
-- [[requirement_utils]] <<requirement_utils,utils>> (>= 1)
+- [[requirement_random]] <<requirement_random,random>> (~> 3.9)
+
+- [[requirement_utils]] <<requirement_utils,utils>> (~> 2.7)
 
 === Providers
 
 The following providers are used by this module:
 
-- [[provider_null]] <<provider_null,null>> (>= 3)
+- [[provider_null]] <<provider_null,null>> (~> 3.3)
 
-- [[provider_random]] <<provider_random,random>> (>= 3)
+- [[provider_random]] <<provider_random,random>> (~> 3.9)
 
 - [[provider_kubernetes]] <<provider_kubernetes,kubernetes>>
 
-- [[provider_argocd]] <<provider_argocd,argocd>> (>= 6)
+- [[provider_argocd]] <<provider_argocd,argocd>> (~> 7.18)
 
-- [[provider_utils]] <<provider_utils,utils>> (>= 1)
+- [[provider_utils]] <<provider_utils,utils>> (~> 2.7)
 
 === Resources
 
@@ -232,6 +234,20 @@ Default:
 }
 ----
 
+==== [[input_app_sync_options]] <<input_app_sync_options,app_sync_options>>
+
+Description: Sync options for the Argo CD Application resource (e.g. DisableHook to prevent secret regeneration).
+
+Type: `list(string)`
+
+Default:
+[source,json]
+----
+[
+  "DisableHook"
+]
+----
+
 ==== [[input_oidc]] <<input_oidc,oidc>>
 
 Description: OIDC configuration to access the Airflow web interface.
@@ -346,11 +362,12 @@ Description: ID to pass other modules in order to refer to this module as a depe
 [cols="a,a",options="header,autowidth"]
 |===
 |Name |Version
-|[[requirement_argocd]] <<requirement_argocd,argocd>> |>= 6
-|[[requirement_helm]] <<requirement_helm,helm>> |>= 2
-|[[requirement_null]] <<requirement_null,null>> |>= 3
-|[[requirement_random]] <<requirement_random,random>> |>= 3
-|[[requirement_utils]] <<requirement_utils,utils>> |>= 1
+|[[requirement_terraform]] <<requirement_terraform,terraform>> |>= 1.9.0
+|[[requirement_argocd]] <<requirement_argocd,argocd>> |~> 7.18
+|[[requirement_helm]] <<requirement_helm,helm>> |~> 3.3
+|[[requirement_null]] <<requirement_null,null>> |~> 3.3
+|[[requirement_random]] <<requirement_random,random>> |~> 3.9
+|[[requirement_utils]] <<requirement_utils,utils>> |~> 2.7
 |===
 
 = Providers
@@ -358,11 +375,11 @@ Description: ID to pass other modules in order to refer to this module as a depe
 [cols="a,a",options="header,autowidth"]
 |===
 |Name |Version
-|[[provider_null]] <<provider_null,null>> |>= 3
-|[[provider_random]] <<provider_random,random>> |>= 3
+|[[provider_null]] <<provider_null,null>> |~> 3.3
+|[[provider_random]] <<provider_random,random>> |~> 3.9
 |[[provider_kubernetes]] <<provider_kubernetes,kubernetes>> |n/a
-|[[provider_argocd]] <<provider_argocd,argocd>> |>= 6
-|[[provider_utils]] <<provider_utils,utils>> |>= 1
+|[[provider_argocd]] <<provider_argocd,argocd>> |~> 7.18
+|[[provider_utils]] <<provider_utils,utils>> |~> 2.7
 |===
 
 = Resources
@@ -505,6 +522,20 @@ object({
 {
   "istio.io/dataplane-mode": "ambient"
 }
+----
+
+|no
+
+|[[input_app_sync_options]] <<input_app_sync_options,app_sync_options>>
+|Sync options for the Argo CD Application resource (e.g. DisableHook to prevent secret regeneration).
+|`list(string)`
+|
+
+[source]
+----
+[
+  "DisableHook"
+]
 ----
 
 |no
