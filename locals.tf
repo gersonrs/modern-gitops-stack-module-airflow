@@ -1,95 +1,11 @@
 locals {
 
-  tag = "v1.8.0"
+  tag = "test-ray-provider"
 
   domain      = format("airflow.%s", trimprefix("${var.subdomain}.${var.base_domain}", "."))
   domain_full = format("airflow.%s.%s", trimprefix("${var.subdomain}.${var.cluster_name}", "."), var.base_domain)
 
   mlflow = var.mlflow != null ? base64encode("http://${var.mlflow.endpoint}:5000/?__extra__=%7B%7D") : base64encode("http://localhost:5000")
-  git_sync_ssh_key_volume = [
-    {
-      name = "config"
-      configMap = {
-        name        = "airflow-config"
-        defaultMode = 420
-      }
-    },
-    {
-      name = "git-sync-ssh-key"
-      secret = {
-        secretName  = "airflow-ssh-secret"
-        defaultMode = 288
-      }
-  }]
-  git_sync_ssh_key_volume_mount = [
-    {
-      name              = "git-sync-ssh-key"
-      mountPath         = "/etc/git-secret/ssh"
-      readOnly          = true
-      recursiveReadOnly = "Disabled"
-    },
-    {
-      name              = "config"
-      mountPath         = "/etc/git-secret/known_hosts"
-      readOnly          = true
-      recursiveReadOnly = "Disabled"
-    }
-  ]
-  # 1. Definição do Volume Vazio
-  plugins_volume = {
-    name     = "plugins-volume"
-    emptyDir = {}
-  }
-
-  # 2. Definição da Montagem no Container Principal
-  plugins_volume_mount = {
-    name      = "plugins-volume"
-    mountPath = "/opt/airflow/plugins"
-    subPath   = "repo/plugins"
-  }
-
-  # 3. Definição do InitContainer do Git-Sync
-  git_sync_plugins_init = {
-    name            = "git-sync-plugins"
-    image           = "registry.k8s.io/git-sync/git-sync:v4.4.2"
-    imagePullPolicy = "IfNotPresent"
-    env = [
-      { name = "GIT_SYNC_REV", value = "HEAD" },
-      { name = "GITSYNC_REF", value = "HEAD" },
-      { name = "GIT_SYNC_BRANCH", value = var.gitsync.branch },
-      { name = "GIT_SYNC_REPO", value = var.gitsync.repo },
-      { name = "GITSYNC_REPO", value = var.gitsync.repo },
-      { name = "GIT_SYNC_DEPTH", value = "1" },
-      { name = "GITSYNC_DEPTH", value = "1" },
-      { name = "GIT_SYNC_ROOT", value = "/git" },
-      { name = "GITSYNC_ROOT", value = "/git" },
-      { name = "GIT_SYNC_DEST", value = "repo" },
-      { name = "GITSYNC_LINK", value = "repo" },
-      { name = "GIT_SYNC_ADD_USER", value = "true" },
-      { name = "GITSYNC_ADD_USER", value = "true" },
-      { name = "GIT_SYNC_ONE_TIME", value = "true" },
-      { name = "GITSYNC_ONE_TIME", value = "true" },
-
-      # SSH (Reaproveitando secrets do chart)
-      { name = "GIT_SSH_KEY_FILE", value = "/etc/git-secret/ssh" },
-      { name = "GITSYNC_SSH_KEY_FILE", value = "/etc/git-secret/ssh" },
-      { name = "GIT_SYNC_SSH", value = "true" },
-      { name = "GITSYNC_SSH", value = "true" },
-      { name = "GIT_KNOWN_HOSTS", value = "true" },
-      { name = "GITSYNC_SSH_KNOWN_HOSTS", value = "true" },
-      { name = "GIT_SSH_KNOWN_HOSTS_FILE", value = "/etc/git-secret/known_hosts" },
-      { name = "GITSYNC_SSH_KNOWN_HOSTS_FILE", value = "/etc/git-secret/known_hosts" }
-    ]
-    volumeMounts = [
-      { name = "plugins-volume", mountPath = "/git" },
-      { name = "git-sync-ssh-key", mountPath = "/etc/git-secret/ssh", readOnly = true, subPath = "gitSshKey" },
-      { name = "config", mountPath = "/etc/git-secret/known_hosts", readOnly = true, subPath = "known_hosts" }
-    ]
-    securityContext = {
-      runAsUser = 65533
-    }
-  }
-
   helm_values = [{
     airflow = {
       fernetKey = "${var.fernetKey}"
@@ -117,15 +33,7 @@ locals {
             enabled = false
             size    = "10Gi"
           }
-          extraVolumes        = [local.plugins_volume]
-          extraVolumeMounts   = [local.plugins_volume_mount]
-          extraInitContainers = [local.git_sync_plugins_init]
         }
-      }
-      scheduler = {
-        extraVolumes        = concat([local.plugins_volume], local.git_sync_ssh_key_volume)
-        extraVolumeMounts   = concat([local.plugins_volume_mount], local.git_sync_ssh_key_volume_mount)
-        extraInitContainers = [local.git_sync_plugins_init]
       }
 
       createUserJob = {
@@ -162,14 +70,6 @@ locals {
           enabled = false
           size    = "10Gi"
         }
-        extraVolumes        = [local.plugins_volume]
-        extraVolumeMounts   = [local.plugins_volume_mount]
-        extraInitContainers = [local.git_sync_plugins_init]
-      }
-      dagProcessor = {
-        extraVolumes        = [local.plugins_volume]
-        extraVolumeMounts   = [local.plugins_volume_mount]
-        extraInitContainers = [local.git_sync_plugins_init]
       }
       logs = {
         persistence = {
@@ -232,6 +132,24 @@ locals {
           name  = "GIT_PYTHON_REFRESH"
           value = "quiet"
         },
+        # Configuração do backend de XCom para o Ray provider (S3/MinIO).
+        # O RayJobOperator usa get_xcom_backend() que lê RAY_XCOM_BACKEND e XCOM_S3_BUCKET.
+        {
+          name  = "RAY_XCOM_BACKEND"
+          value = "s3"
+        },
+        {
+          name  = "XCOM_S3_BUCKET"
+          value = "ray-xcom-test"
+        },
+        {
+          name  = "MINIO_ENDPOINT"
+          value = "http://${var.storage.endpoint}"
+        },
+        {
+          name  = "RAY_XCOM_VERIFY_SSL"
+          value = "false"
+        },
       ]
       extraSecrets = {
         airflow-metadata-secret = {
@@ -291,7 +209,7 @@ locals {
             value = "${var.oidc.issuer_url}/.well-known/openid-configuration"
           }
         ]
-        apiServerConfig   = <<-EOT
+        apiServerConfig = <<-EOT
             from airflow.providers.fab.auth_manager.security_manager.override import FabAirflowSecurityManagerOverride
             from flask_appbuilder.security.manager import AUTH_OAUTH
             import logging
@@ -376,33 +294,30 @@ locals {
             # Make sure to replace this with your own implementation of AirflowSecurityManager class
             SECURITY_MANAGER_CLASS = CustomSecurityManager
         EOT
-        extraVolumes      = concat([local.plugins_volume], local.git_sync_ssh_key_volume)
-        extraVolumeMounts = concat([local.plugins_volume_mount], local.git_sync_ssh_key_volume_mount)
         extraInitContainers = [
-          local.git_sync_plugins_init,
           {
             image           = "gersonrs/airflow:${local.tag}"
             imagePullPolicy = "IfNotPresent"
             env = [
               {
                 name  = "conn_kubernetes"
-                value = "${base64encode("kubernetes:///?__extra__=%7B%22in_cluster%22%3A+true%2C+%22disable_verify_ssl%22%3A+false%2C+%22disable_tcp_keepalive%22%3A+false%7D")}"
+                value = "kubernetes:///?__extra__=%7B%22in_cluster%22%3A+true%2C+%22disable_verify_ssl%22%3A+false%2C+%22disable_tcp_keepalive%22%3A+false%7D"
               },
               {
                 name  = "conn_minio_s3"
-                value = "${base64encode("aws:///?region_name=eu-west-1&aws_access_key_id=${var.storage.access_key}&aws_secret_access_key=${var.storage.secret_access_key}&endpoint_url=http://${var.storage.endpoint}")}"
+                value = "aws:///?region_name=eu-west-1&aws_access_key_id=${var.storage.access_key}&aws_secret_access_key=${var.storage.secret_access_key}&endpoint_url=http://${var.storage.endpoint}"
               },
               {
                 name  = "conn_postegres_curated"
-                value = "${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/curated")}"
+                value = "postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/curated"
               },
               {
                 name  = "conn_postegres_data"
-                value = "${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/data")}"
+                value = "postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/data"
               },
               {
                 name  = "conn_postegres_feature_store"
-                value = "${base64encode("postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/feature_store")}"
+                value = "postgresql://${var.database.user}:${var.database.password}@${var.database.endpoint}:5432/feature_store"
               },
               {
                 name  = "conn_mlflow"
@@ -446,7 +361,10 @@ locals {
               },
             ]
             name = "config-connections"
-            args = ["bash", "/opt/airflow/script.sh"]
+            args = [
+              "bash",
+              "/opt/airflow/script.sh"
+            ]
             volumeMounts = [
               {
                 name = "airflow-airflow-connections"
@@ -458,6 +376,10 @@ locals {
           }
         ]
       }
+      # extraEnvFrom = <<-EOT
+      #   - secretRef:
+      #       name: "airflow-airflow-connections"
+      # EOT
     }
   }]
 
