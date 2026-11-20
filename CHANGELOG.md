@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v1.10.0...v2.0.0) (2026-11-20)
+
+
+### ⚠ BREAKING CHANGES
+
+* provider major bumps and a stricter Terraform baseline; consumers must run `terraform init -upgrade`.
+
+### 🚀 New Features
+
+* upgrade charts, providers and Terraform baseline ([#29](https://github.com/gersonrs/modern-gitops-stack-module-airflow/issues/29)) ([dfae80c](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/dfae80c87ddc2d3978001333b9b38fa9fc2c562f))
+
 ## [1.10.0](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v1.9.0...v1.10.0) (2026-07-20)
 
 
