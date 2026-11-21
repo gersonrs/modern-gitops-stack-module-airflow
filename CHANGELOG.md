@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v2.0.1...v2.0.2) (2026-11-21)
+
+
+### 🔥 Bug Fixes
+
+* restore the published airflow image tag ([#33](https://github.com/gersonrs/modern-gitops-stack-module-airflow/issues/33)) ([64189ab](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/64189ab556e722ea1c8779396e146bb4f2844fbe))
+
 ## [2.0.1](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v2.0.0...v2.0.1) (2026-11-21)
 
 
