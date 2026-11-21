@@ -9,7 +9,7 @@ resource "random_password" "airflow_api_secret_key" {
     resource.null_resource.dependencies,
   ]
 }
-resource "kubernetes_namespace" "airflow_namespace" {
+resource "kubernetes_namespace_v1" "airflow_namespace" {
   metadata {
     annotations = {
       name                              = var.namespace
@@ -25,7 +25,7 @@ resource "kubernetes_namespace" "airflow_namespace" {
   ]
 }
 
-resource "kubernetes_secret" "airflow_ssh_secret" {
+resource "kubernetes_secret_v1" "airflow_ssh_secret" {
   metadata {
     name      = "airflow-ssh-secret"
     namespace = var.namespace
@@ -35,7 +35,7 @@ resource "kubernetes_secret" "airflow_ssh_secret" {
     gitSshKey = file("${var.home_ssh}")
   }
 
-  depends_on = [kubernetes_namespace.airflow_namespace]
+  depends_on = [kubernetes_namespace_v1.airflow_namespace]
 }
 
 resource "argocd_project" "this" {
@@ -137,7 +137,7 @@ resource "argocd_application" "this" {
 
   depends_on = [
     resource.null_resource.dependencies,
-    kubernetes_secret.airflow_ssh_secret
+    kubernetes_secret_v1.airflow_ssh_secret
   ]
 }
 
