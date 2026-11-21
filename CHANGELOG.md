@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.4](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v2.0.3...v2.0.4) (2026-11-21)
+
+
+### 🔥 Bug Fixes
+
+* use startupProbe instead of readinessProbe on the scheduler ([#37](https://github.com/gersonrs/modern-gitops-stack-module-airflow/issues/37)) ([8fa1b47](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/8fa1b47e995ac42f074b99e2ac3a6f450c2d9d89))
+
 ## [2.0.3](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v2.0.2...v2.0.3) (2026-11-21)
 
 
