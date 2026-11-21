@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v2.0.2...v2.0.3) (2026-11-21)
+
+
+### 🔥 Bug Fixes
+
+* give the api-server and scheduler time to start before probes fail ([#35](https://github.com/gersonrs/modern-gitops-stack-module-airflow/issues/35)) ([6b12ea4](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/6b12ea4ec337d55d4e648979146743f41afdbfd3))
+
 ## [2.0.2](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v2.0.1...v2.0.2) (2026-11-21)
 
 
