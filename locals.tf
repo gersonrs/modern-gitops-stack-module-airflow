@@ -203,16 +203,18 @@ locals {
       # chart defaults (10-15s initial delay) make kubelet SIGTERM the pod
       # mid-startup (exit 143) and it loops in CrashLoopBackOff.
       scheduler = {
+        # Chart 1.22 only exposes livenessProbe and startupProbe for the
+        # scheduler; readiness is driven by the startupProbe.
         livenessProbe = {
           initialDelaySeconds = 120
           failureThreshold    = 10
           periodSeconds       = 60
           timeoutSeconds      = 30
         }
-        readinessProbe = {
+        startupProbe = {
           initialDelaySeconds = 120
-          failureThreshold    = 10
-          periodSeconds       = 60
+          failureThreshold    = 30
+          periodSeconds       = 30
           timeoutSeconds      = 30
         }
       }
