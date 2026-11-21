@@ -1,6 +1,6 @@
 locals {
 
-  tag = "test-ray-provider"
+  tag = "v1.8.0"
 
   domain      = format("airflow.%s", trimprefix("${var.subdomain}.${var.base_domain}", "."))
   domain_full = format("airflow.%s.%s", trimprefix("${var.subdomain}.${var.cluster_name}", "."), var.base_domain)
