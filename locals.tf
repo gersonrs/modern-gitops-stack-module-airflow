@@ -198,7 +198,37 @@ locals {
           EOT
         }
       }
+      # kind nodes are slow to pull the 3.4 GB airflow image and the scheduler
+      # needs to adopt the metadata database before it reports healthy. The
+      # chart defaults (10-15s initial delay) make kubelet SIGTERM the pod
+      # mid-startup (exit 143) and it loops in CrashLoopBackOff.
+      scheduler = {
+        livenessProbe = {
+          initialDelaySeconds = 120
+          failureThreshold    = 10
+          periodSeconds       = 60
+          timeoutSeconds      = 30
+        }
+        readinessProbe = {
+          initialDelaySeconds = 120
+          failureThreshold    = 10
+          periodSeconds       = 60
+          timeoutSeconds      = 30
+        }
+      }
       apiServer = {
+        livenessProbe = {
+          initialDelaySeconds = 120
+          failureThreshold    = 10
+          periodSeconds       = 20
+          timeoutSeconds      = 10
+        }
+        readinessProbe = {
+          initialDelaySeconds = 120
+          failureThreshold    = 10
+          periodSeconds       = 20
+          timeoutSeconds      = 10
+        }
         env = [
           {
             name  = "OAUTH2_METADATA_URL"
