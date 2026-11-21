@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v2.0.0...v2.0.1) (2026-11-21)
+
+
+### 🔥 Bug Fixes
+
+* use kubernetes_namespace_v1 and kubernetes_secret_v1 ([#31](https://github.com/gersonrs/modern-gitops-stack-module-airflow/issues/31)) ([9fb941c](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/9fb941c1ae636c072082b32ff1fabc8c2373bb62))
+
 ## [2.0.0](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v1.10.0...v2.0.0) (2026-11-20)
 
 
