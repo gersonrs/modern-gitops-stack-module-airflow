@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.5](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v2.0.4...v2.0.5) (2026-11-24)
+
+
+### 📚 Documentation
+
+* add usage and dependencies to the module documentation ([#39](https://github.com/gersonrs/modern-gitops-stack-module-airflow/issues/39)) ([c5c1a2b](https://github.com/gersonrs/modern-gitops-stack-module-airflow/commit/c5c1a2b6aff35e5b1ca32ceee5fd441cb538aa60))
+
 ## [2.0.4](https://github.com/gersonrs/modern-gitops-stack-module-airflow/compare/v2.0.3...v2.0.4) (2026-11-21)
 
 
