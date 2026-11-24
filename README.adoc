@@ -1,4 +1,61 @@
 = modern-gitops-stack-module-airflow
+// Document attributes to replace along the document
+:airflow-chart-version: 1.22.0
+:original-repo-url: https://github.com/apache/airflow
+
+A https://modern-gitops-stack.io[Modern GitOps Stack] module to deploy Apache Airflow, a platform to programmatically author, schedule and monitor data workflows.
+
+The airflow chart used by this module is shipped in this repository as well, in order to avoid any unwanted behaviors caused by unsupported versions.
+
+[cols="1,1,1",options="autowidth,header"]
+|===
+|Current Chart Version |Original Repository |Default Values
+|*1.22.0* |https://github.com/apache/airflow/tree/main/chart[airflow] |https://artifacthub.io/packages/helm/airflow/airflow/1.22.0?modal=values[`values.yaml`]
+|===
+
+== Usage
+
+This module can be declared by adding the following block to your Terraform configuration:
+
+[source,terraform]
+----
+module "airflow" {
+  source = "git::https://github.com/GersonRS/modern-gitops-stack-module-airflow.git?ref=<RELEASE>"
+
+  cluster_name   = local.cluster_name
+  base_domain    = local.base_domain
+  subdomain      = local.subdomain
+  cluster_issuer = local.cluster_issuer
+  app_autosync   = local.app_autosync
+  fernetKey      = random_password.airflow_fernetKey.result
+  storage        = { ... }  # MinIO bucket
+  database       = { ... }  # PostgreSQL connection
+
+  dependency_ids = {
+    postgresql = module.postgresql.id
+    minio      = module.minio.id
+    keycloak   = module.keycloak.id
+  }
+}
+----
+
+The application is deployed to the `orchestrator` namespace.
+
+== Technical Reference
+
+=== Dependencies
+
+==== `module.postgresql.id`
+
+Airflow stores metadata in PostgreSQL.
+
+==== `module.minio.id`
+
+Airflow stores logs and DAG artifacts in MinIO.
+
+==== `module.keycloak.id`
+
+Airflow authenticates through Keycloak.
 
 // BEGIN_TF_DOCS
 === Requirements
